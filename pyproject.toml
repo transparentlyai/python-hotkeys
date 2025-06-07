@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "python-hotkeys"
-version = "0.1.0"
+version = "0.1.1"
 description = "A robust, single-file, dependency-free library for capturing global terminal hotkeys on Unix-like systems, with support for both sync and async callbacks."
 readme = "README.md"
 requires-python = ">=3.7"
@@ -31,8 +31,8 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/mauro-stran/python-hotkeys"
-Issues = "https://github.com/mauro-stran/python-hotkeys/issues"
+Homepage = "https://github.com/transparentlyai/python-hotkeys"
+Issues = "https://github.com/transparentlyai/python-hotkeys/issues"
 
 [project.scripts]
 hotkeys-sync-demo = "sync_demo:main"
