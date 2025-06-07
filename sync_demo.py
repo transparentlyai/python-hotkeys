@@ -8,7 +8,7 @@
 
 import time
 import logging
-from main import GlobalHotkeys # Assuming 'main.py' contains the GlobalHotkeys class
+from python_hotkeys import GlobalHotkeys
 
 # --- 1. Setup Logging (Optional but Recommended) ---
 # This helps you see what the GlobalHotkeys class is doing in the background.
@@ -71,15 +71,19 @@ print("\nListener started. Press a registered hotkey.")
 # needs to keep running for the background thread to stay alive.
 # This loop will run until the `hotkeys._running` flag is set to False,
 # which is what our `exit_program` function does.
-try:
-    while hotkeys._running:
-        # You can do other work in your main thread here if needed.
-        # We'll just sleep to prevent this loop from using 100% CPU.
-        time.sleep(0.1)
-except KeyboardInterrupt:
-    # This allows you to press Ctrl+C in the terminal as a fallback,
-    # though our registered hotkey is the cleaner way to exit.
-    print("\nKeyboardInterrupt caught. Forcing shutdown.")
-    hotkeys.stop()
+def main():
+    try:
+        while hotkeys._running:
+            # You can do other work in your main thread here if needed.
+            # We'll just sleep to prevent this loop from using 100% CPU.
+            time.sleep(0.1)
+    except KeyboardInterrupt:
+        # This allows you to press Ctrl+C in the terminal as a fallback,
+        # though our registered hotkey is the cleaner way to exit.
+        print("\nKeyboardInterrupt caught. Forcing shutdown.")
+        hotkeys.stop()
 
-print("Program finished.")
+    print("Program finished.")
+
+if __name__ == "__main__":
+    main()

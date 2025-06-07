@@ -1,11 +1,38 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "python-hotkeys"
 version = "0.1.0"
 description = "A robust, single-file, dependency-free library for capturing global terminal hotkeys on Unix-like systems, with support for both sync and async callbacks."
-authors = [{ name = "Your Name", email = "your@email.com" }]
-license = { text = "MIT" }
 readme = "README.md"
 requires-python = ">=3.7"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Mauro Strang", email = "mauro.stran@gmail.com" },
+]
+keywords = ["hotkey", "terminal", "keyboard", "asyncio", "tui", "shortcut"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Terminals",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[project.urls]
+Homepage = "https://github.com/mauro-stran/python-hotkeys"
+Issues = "https://github.com/mauro-stran/python-hotkeys/issues"
 
 [project.scripts]
 hotkeys-sync-demo = "sync_demo:main"

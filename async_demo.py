@@ -9,7 +9,7 @@
 import asyncio
 import time
 import logging
-from main import GlobalHotkeys # Assuming 'main.py' contains the GlobalHotkeys class
+from python_hotkeys import GlobalHotkeys
 
 # --- 1. Setup Logging (Optional but Recommended) ---
 logging.basicConfig(
@@ -77,11 +77,15 @@ print("\nListener started. Press a registered hotkey.")
 # --- 5. Keep the Main Thread Alive ---
 # The logic is the same as in the sync demo. We wait until the `exit_program`
 # function tells the hotkeys instance to stop.
-try:
-    while hotkeys._running:
-        time.sleep(0.1)
-except KeyboardInterrupt:
-    print("\nKeyboardInterrupt caught. Forcing shutdown.")
-    hotkeys.stop()
+def main():
+    try:
+        while hotkeys._running:
+            time.sleep(0.1)
+    except KeyboardInterrupt:
+        print("\nKeyboardInterrupt caught. Forcing shutdown.")
+        hotkeys.stop()
 
-print("Program finished.")
+    print("Program finished.")
+
+if __name__ == "__main__":
+    main()
