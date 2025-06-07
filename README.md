@@ -236,10 +236,10 @@ The key parsing engine is designed for maximum compatibility across **Unix-like 
 - **`xterm`** and derivatives (xterm-256color, etc.)
 - **`gnome-terminal`** (GNOME desktop default)
 - **`rxvt-unicode`** (urxvt)
+- **`kitty`** 
 - **Linux console** (text mode, no GUI)
 - **macOS Terminal.app** and **iTerm2**
 - **VS Code** integrated terminal
-- **PyCharm** and other JetBrains IDE terminals
 - **tmux** and **screen** multiplexers
 - **SSH sessions** and remote terminals
 
