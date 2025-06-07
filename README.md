@@ -13,13 +13,29 @@ This entire library is contained in the `src/python_hotkeys/__init__.py` file, m
 
 ## Key Features
 
-- **Zero Dependencies**: Pure Python standard library implementation.
-- **Sync and Async Support**: Register standard `def` functions or `async def` coroutines as callbacks. The library handles both seamlessly.
-- **Suspend and Resume**: Temporarily pause the listener to cede terminal control to other applications (like a TUI or shell command) and then resume without a full restart.
-- **Robust Key Parsing**: Built with a sophisticated key sequence parser, it correctly handles complex escape sequences, multi-key chords (e.g., `Alt+X`), and modifier keys (`Ctrl`, `Shift`).
-- **Terminal-Aware**: Automatically detects if it's running in a TTY and gracefully handles non-interactive environments.
-- **Thread-Safe**: Uses a background thread for listening, ensuring your main application remains responsive.
-- **Clean Exit**: Automatically restores terminal settings on exit, preventing a broken terminal state.
+✨ **Zero Dependencies** - Pure Python standard library implementation, no external packages required
+
+⚡ **Dual Mode Support** - Works with both synchronous functions and async coroutines seamlessly
+
+🎯 **Smart Suspend/Resume** - Pause hotkey listening to hand control to TUI apps, then resume without restart
+
+🔧 **Advanced Key Parsing** - Handles complex combinations like `Ctrl+Shift+Alt+F1`, all function keys (F1-F24), arrow keys, and ANSI escape sequences
+
+🖥️ **Terminal Intelligence** - Auto-detects TTY environments and gracefully handles non-interactive shells
+
+🧵 **Thread-Safe Operation** - Runs in background threads, integrates seamlessly into existing threaded applications
+
+🛡️ **Safe Terminal Handling** - Automatically restores terminal settings on exit, preventing broken states
+
+⚙️ **Unhandled Key Queue** - Access keys that weren't bound to hotkeys for advanced integration patterns
+
+🔄 **UTF-8 Support** - Robust Unicode handling with incremental decoding for international keyboards
+
+⏱️ **Timeout-Based Parsing** - Intelligently handles multi-character escape sequences with configurable timeout
+
+🎛️ **Key Aliases** - Support for common key name variations (`enter`/`return`, `backspace`/`ctrl+h`)
+
+📦 **Single File Library** - Entire implementation in one file for easy integration into any project
 
 ## Installation
 
@@ -83,6 +99,41 @@ hotkeys.start()
 try:
     while hotkeys._running:
         pass
+except KeyboardInterrupt:
+    hotkeys.stop()
+```
+
+### Threading Integration
+
+The library is designed to work seamlessly in multi-threaded applications:
+
+```python
+import threading
+from python_hotkeys import GlobalHotkeys
+
+def worker_thread():
+    # Your existing application logic
+    while True:
+        # Do work...
+        time.sleep(1)
+
+def on_pause():
+    print("Application paused via hotkey!")
+
+# Start your application threads
+hotkeys = GlobalHotkeys()
+hotkeys.register_hotkey('ctrl+p', on_pause)
+hotkeys.start()  # Runs in background threads
+
+# Start other application threads
+worker = threading.Thread(target=worker_thread, daemon=True)
+worker.start()
+
+# Main thread remains free for other work
+try:
+    while True:
+        # Main application logic
+        time.sleep(0.1)
 except KeyboardInterrupt:
     hotkeys.stop()
 ```
@@ -178,14 +229,27 @@ This is an advanced and less common pattern. You can run the `python-hotkeys` li
 
 ## Supported Terminals and Environments
 
-The key parsing is designed to work on a wide variety of **Unix-like terminals** that follow standard ANSI/VT escape code conventions. It has been tested and is known to work well with:
+The key parsing engine is designed for maximum compatibility across **Unix-like terminals** that follow standard ANSI/VT escape code conventions. It includes multiple escape sequence patterns for each key to ensure broad terminal support.
 
-- **`gnome-terminal`**
-- **`xterm`** and its derivatives
-- **`rxvt-unicode`**
-- **Linux console** (non-GUI)
-- **macOS Terminal** and **iTerm2**
-- Terminals used in **VS Code**, **PyCharm**, and other IDEs.
+### ✅ Fully Tested and Supported
+
+- **`xterm`** and derivatives (xterm-256color, etc.)
+- **`gnome-terminal`** (GNOME desktop default)
+- **`rxvt-unicode`** (urxvt)
+- **Linux console** (text mode, no GUI)
+- **macOS Terminal.app** and **iTerm2**
+- **VS Code** integrated terminal
+- **PyCharm** and other JetBrains IDE terminals
+- **tmux** and **screen** multiplexers
+- **SSH sessions** and remote terminals
+
+### 🔧 Key Compatibility Features
+
+- **Multiple escape patterns** per key (F1 works as `\x1bOP`, `\x1b[[A`, or `\x1b[11~`)
+- **Application mode support** for arrow keys and navigation
+- **Extended function keys** support (F13-F24)
+- **Modified key combinations** (Ctrl+arrows, Shift+arrows, Alt+arrows)
+- **Fallback sequences** for terminal-specific variations
 
 ### Windows Support
 
@@ -197,15 +261,23 @@ This script is **not compatible with Windows `cmd.exe` or PowerShell** because i
 
 - `timeout`: The time in seconds to wait for subsequent characters in a multi-key escape sequence before processing the buffer.
 
-### Methods
+### Core Methods
 
-- `register_hotkey(key, callback)`: Binds a `callback` function to a `key` string.
-- `unregister_hotkey(key)`: Removes a registered hotkey.
-- `start()`: Starts the listener threads.
-- `stop()`: Permanently stops the listener threads and restores the terminal.
-- `suspend()`: Temporarily gives up terminal control by restoring its original settings and pausing the listener. This allows other programs to read input.
-- `resume()`: Re-acquires terminal control (setting it to cbreak mode) and resumes the listener.
-- `get_unhandled_key()`: (Advanced) Retrieves an unhandled key from the input queue.
+- `register_hotkey(key, callback)`: Binds a `callback` function to a `key` string
+- `unregister_hotkey(key)`: Removes a registered hotkey
+- `start()`: Starts the listener threads and event loop
+- `stop()`: Permanently stops the listener threads and restores the terminal
+
+### Suspend/Resume Control
+
+- `suspend()`: Temporarily gives up terminal control by restoring its original settings and pausing the listener. This allows other programs to read input
+- `resume()`: Re-acquires terminal control (setting it to cbreak mode) and resumes the listener
+
+### Advanced Queue Management
+
+- `get_unhandled_key()`: Retrieves an unhandled key from the queue (non-blocking, returns `None` if empty)
+- `clear_unhandled_keys()`: Clears all unhandled keys from the queue
+- `get_queue_size()`: Returns the current number of unhandled keys in the queue (max 1000)
 
 ## How It Works
 
