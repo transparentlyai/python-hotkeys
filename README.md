@@ -1,87 +1,139 @@
 # Python Hotkeys
 
+[![PyPI version](https://badge.fury.io/py/python-hotkeys.svg)](https://badge.fury.io/py/python-hotkeys)
+[![Python 3.7+](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Platform: Unix](https://img.shields.io/badge/platform-Unix%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://en.wikipedia.org/wiki/Unix-like)
+
 A robust, single-file, dependency-free library for capturing global terminal hotkeys on Unix-like systems. It is designed for simplicity, reliability, and modern asynchronous applications, while remaining fully compatible with traditional synchronous code.
 
-This entire library is contained in the `main.py` file, making it easy to drop into any project.
-
-![Demo](https://github.com/mauro-stran/python-hotkeys/blob/main/assets/demo.gif)
+This entire library is contained in the `src/python_hotkeys/__init__.py` file, making it easy to drop into any project.
 
 ---
 
 ## Key Features
 
-- **Zero Dependencies**: Pure Python standard library implementation. Drop `main.py` into your project and go.
+- **Zero Dependencies**: Pure Python standard library implementation.
 - **Sync and Async Support**: Register standard `def` functions or `async def` coroutines as callbacks. The library handles both seamlessly.
 - **Suspend and Resume**: Temporarily pause the listener to cede terminal control to other applications (like a TUI or shell command) and then resume without a full restart.
-- **Robust Key Parsing**: Built with a sophisticated key sequence parser inspired by `prompt_toolkit`, it correctly handles complex escape sequences, multi-key chords (e.g., `Alt+X`), and modifier keys (`Ctrl`, `Shift`).
+- **Robust Key Parsing**: Built with a sophisticated key sequence parser, it correctly handles complex escape sequences, multi-key chords (e.g., `Alt+X`), and modifier keys (`Ctrl`, `Shift`).
 - **Terminal-Aware**: Automatically detects if it's running in a TTY and gracefully handles non-interactive environments.
 - **Thread-Safe**: Uses a background thread for listening, ensuring your main application remains responsive.
 - **Clean Exit**: Automatically restores terminal settings on exit, preventing a broken terminal state.
 
 ## Installation
 
-This project uses `uv` for fast environment management.
+### From PyPI (Recommended)
 
-1.  **Create a Virtual Environment**:
+```bash
+uv add python-hotkeys
+```
 
-    ```bash
-    uv venv
-    ```
+### From Source
 
-2.  **Activate the Environment**:
+For development or to get the latest features:
 
-    ```bash
-    source .venv/bin/activate
-    ```
+```bash
+# Clone the repository
+git clone https://github.com/mauro-stran/python-hotkeys.git
+cd python-hotkeys
 
-3.  **Install in Editable Mode**:
-    Installing in editable mode (`-e`) links the package to your source files, so any changes you make are immediately reflected.
+# Install with uv
+uv add -e .
+```
 
-    ```bash
-    uv pip install -e .
-    ```
+## Quick Start
 
-## How to Use
+### Basic Example
 
-Using the library involves four simple steps:
+```python
+from python_hotkeys import GlobalHotkeys
 
-1.  **Import** the `GlobalHotkeys` class.
-2.  **Define** your callback functions (sync or async).
-3.  **Instantiate** `GlobalHotkeys` and **register** your hotkeys.
-4.  **Start** the listener and keep your main thread alive.
+def on_hotkey():
+    print("Hotkey pressed!")
 
-*For basic examples, see the `sync_demo.py` and `async_demo.py` files.*
+hotkeys = GlobalHotkeys()
+hotkeys.register_hotkey('ctrl+shift+h', on_hotkey)
+hotkeys.start()
 
-## Integrating with `prompt_toolkit`
+# Keep the program running
+try:
+    while hotkeys._running:
+        pass
+except KeyboardInterrupt:
+    hotkeys.stop()
+```
 
-Since both this library and `prompt_toolkit` need exclusive control over terminal input, you must carefully manage who is in control. The new `suspend()` and `resume()` methods are the perfect tools for this.
+### Async Example
+
+```python
+import asyncio
+from python_hotkeys import GlobalHotkeys
+
+async def async_action():
+    print("Async hotkey triggered!")
+    await asyncio.sleep(1)  # Non-blocking operation
+    print("Async task completed!")
+
+hotkeys = GlobalHotkeys()
+hotkeys.register_hotkey('ctrl+alt+a', async_action)
+hotkeys.start()
+
+# Keep running
+try:
+    while hotkeys._running:
+        pass
+except KeyboardInterrupt:
+    hotkeys.stop()
+```
+
+### Complete Examples
+
+For more detailed examples, see:
+- `sync_demo.py` - Synchronous callback demonstrations
+- `async_demo.py` - Asynchronous callback demonstrations
+
+## Integrating with TUI Applications
+
+Since both this library and other terminal-based UI libraries need exclusive control over terminal input, you must carefully manage who is in control. The `suspend()` and `resume()` methods are the perfect tools for this.
 
 ### Option 1: Suspend and Resume Around a TUI App (Recommended)
 
-This is the most efficient and robust pattern. The global listener runs, and when a hotkey is pressed to launch a TUI, you `suspend()` the listener. This restores normal terminal behavior, allowing `prompt_toolkit` to take over. When the TUI exits, you `resume()` the listener.
+This is the most efficient and robust pattern. The global listener runs, and when a hotkey is pressed to launch a TUI, you `suspend()` the listener. This restores normal terminal behavior, allowing the TUI application to take over. When the TUI exits, you `resume()` the listener.
 
 **Use Case**: A `ctrl+space` hotkey that launches a command palette TUI.
 
 ```python
 import asyncio
-from prompt_toolkit import PromptSession
-from main import GlobalHotkeys
+from python_hotkeys import GlobalHotkeys
 
 hotkeys = GlobalHotkeys()
 
+# A placeholder for any TUI (Text-based User Interface) application.
+class YourTUIApp:
+    async def run_async(self):
+        # In a real app, this would draw the UI and handle input.
+        # For this demo, we'll just print some text and wait.
+        print("\n--- TUI is Active ---")
+        print("Pretend there is a cool interface here.")
+        print("It will close in 3 seconds.")
+        await asyncio.sleep(3) # Simulate TUI running
+        print("--- TUI is Exiting ---")
+        return "Some result from the TUI"
+
 async def launch_tui():
-    print("Hotkey pressed! Suspending global listener and launching TUI...")
+    print("\nHotkey pressed! Suspending global listener and launching TUI...")
     hotkeys.suspend()
 
-    # --- Your prompt_toolkit App Runs Here ---
-    # The terminal is now in a normal state for prompt_toolkit to use.
-    session = PromptSession()
+    # --- Your TUI App Runs Here ---
+    # The terminal is now in a normal state for your TUI library to use.
+    tui_app = YourTUIApp()
     try:
-        result = await session.prompt_async('TUI Prompt> ')
-        print(f"You entered: {result}")
+        result = await tui_app.run_async()
+        print(f"TUI result: '{result}'")
     finally:
         # --- Resume Global Listener on Exit ---
-        print("TUI exited. Resuming global hotkey listener...")
+        print("Resuming global hotkey listener...")
         hotkeys.resume()
 
 # Register the global hotkey
@@ -89,6 +141,7 @@ hotkeys.register_hotkey('ctrl+space', launch_tui)
 hotkeys.start()
 
 print("Global listener active. Press Ctrl+Space to launch the TUI.")
+print("Press Ctrl+C to exit the program.")
 
 # Main event loop to keep the script alive
 async def main():
@@ -98,7 +151,7 @@ async def main():
         await asyncio.sleep(1)
 
 async def shutdown():
-    print("Exiting.")
+    print("\nExiting.")
     hotkeys.stop()
 
 if __name__ == "__main__":
@@ -111,22 +164,17 @@ if __name__ == "__main__":
             hotkeys.stop()
 ```
 
-### Option 2: Using `prompt_toolkit` for All Key Bindings
+### Option 2: Using a TUI Library for All Key Bindings
 
-If your application is a persistent, full-screen TUI, it is often simpler to let `prompt_toolkit` handle all key bindings directly. In this scenario, you don't need this `python-hotkeys` library at all.
+If your application is a persistent, full-screen TUI, it is often simpler to let the TUI library handle all key bindings directly. In this scenario, you don't need this `python-hotkeys` library at all.
 
 **Use Case**: A text editor or file manager where all key presses are handled within the application itself.
 
-*See the `README.md` from the previous version for a code example.*
-
 ### Option 3: Advanced Integration with `get_unhandled_key`
 
-This is an advanced and less common pattern. You can run the `python-hotkeys` listener and have your `prompt_toolkit` application periodically poll for unhandled keys from its queue. This could be useful if you want to react to global hotkeys *while* a `prompt_toolkit` app is running but without using its native key-binding system.
+This is an advanced and less common pattern. You can run the `python-hotkeys` listener and have your TUI application periodically poll for unhandled keys from its queue. This could be useful if you want to react to global hotkeys *while* a TUI app is running but without using its native key-binding system.
 
 **This approach is complex and can lead to race conditions. Use with caution.**
-
-*See the `README.md` from the previous version for a code example.*
-
 
 ## Supported Terminals and Environments
 
@@ -162,3 +210,48 @@ This script is **not compatible with Windows `cmd.exe` or PowerShell** because i
 ## How It Works
 
 The library operates by setting the terminal to `cbreak` mode, allowing it to read individual characters as they are typed without requiring the user to press Enter. The `suspend()` and `resume()` methods toggle this `cbreak` mode on and off, allowing for seamless interoperability with other terminal applications.
+
+## Development
+
+### Setting up the Development Environment
+
+```bash
+# Clone the repository
+git clone https://github.com/mauro-stran/python-hotkeys.git
+cd python-hotkeys
+
+# Create and activate virtual environment
+uv venv
+source .venv/bin/activate
+
+# Install in editable mode
+uv add -e .
+```
+
+### Running Examples
+
+```bash
+# Run synchronous demo
+python sync_demo.py
+
+# Run asynchronous demo  
+python async_demo.py
+```
+
+### Building and Publishing
+
+```bash
+# Build the package
+uv build
+
+# Publish to PyPI (maintainers only)
+uv publish
+```
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
