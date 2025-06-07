@@ -1,0 +1,12 @@
+[project]
+name = "python-hotkeys"
+version = "0.1.0"
+description = "A robust, single-file, dependency-free library for capturing global terminal hotkeys on Unix-like systems, with support for both sync and async callbacks."
+authors = [{ name = "Your Name", email = "your@email.com" }]
+license = { text = "MIT" }
+readme = "README.md"
+requires-python = ">=3.7"
+
+[project.scripts]
+hotkeys-sync-demo = "sync_demo:main"
+hotkeys-async-demo = "async_demo:main"
