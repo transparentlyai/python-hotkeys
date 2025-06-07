@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.7"
 license = { file = "LICENSE" }
 authors = [
-    { name = "Mauro Strang", email = "mauro.stran@gmail.com" },
+    { name = "Mauro D. Sauco", email = "mauro@sauco.net" },
 ]
 keywords = ["hotkey", "terminal", "keyboard", "asyncio", "tui", "shortcut"]
 classifiers = [
